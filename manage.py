@@ -1,9 +1,11 @@
+import datetime
 import json
 import sys
 import os
+import win32api
 
 
-def choose(name: str, subsection: bool):
+def input_choice(name: str, subsection: bool):
     absolute_exit_command = ["exit", "quit", "die"]
     exit_command = ["done", "goodbye", "complete", "ok"]
     arr = {} if subsection else []
@@ -35,7 +37,7 @@ def choose(name: str, subsection: bool):
                 sys.exit()
 
             if second_input not in arr[first_input]:
-                arr[first_input].append(second_input)
+                arr[first_input][second_input] = []
     return arr
 
 
@@ -52,12 +54,12 @@ def init():
         print("Folder created!")
 
     print("Making Media")
-    output["media"] = choose("media", True)
+    output["media"] = input_choice("media", True)
 
     print("")
 
     print("Making drive")
-    output["drive"] = choose("drive", False)
+    output["drive"] = input_choice("drive", False)
 
     media_path = os.path.join(collection_folder, "media")
     os.makedirs(media_path)
@@ -83,6 +85,24 @@ def init():
     print("Completed!")
 
 
+def choose(options: list):
+    while True:
+        for i, option in enumerate(options):
+            print(f"{i}: {option}")
+        user_input = input("Select option: ")
+
+        if user_input.isnumeric() and int(user_input) in range(0, len(options)):
+            break
+    return options[int(user_input)]
+
+
+def remove_default_drives(variable):
+    if variable in ['C:\\', 'D:\\']:
+        return False
+    else:
+        return True
+
+
 def register():
     try:
         device_type = sys.argv[2]
@@ -90,11 +110,33 @@ def register():
         print("Usage: py manage.py register [device_type]")
         sys.exit()
 
-    if device_type == "media":
-        pass
+    list_of_devices = filter(remove_default_drives, win32api.GetLogicalDriveStrings().split('\0')[:-1])
+    device = choose(list_of_devices)
+    path = os.path.join(os.getcwd(), "collection", "media" if device_type == "media" else "drive")
 
-    if device_type == "drive":
-        pass
+    # Register drive
+    while True:
+        ask_user = input("Enter drive name: ")
+        if ask_user in os.listdir(path):
+            path = os.path.join(path, str(ask_user).lower())
+            break
+
+    # Register media
+    device_name = choose(os.listdir(path))
+    device_type = choose(os.listdir(os.path.join(path, device_name)))
+
+    register_device_name = input_choice("device_name", False)
+
+    with open(os.path.join(path, device_name, device_type, f"{register_device_name}.json"), "w") as f:
+        device_info = {
+            "name": device_name,
+            "type": device_type,
+            "files": [],
+            "transactions": [
+                datetime.datetime.now().timestamp(),
+            ]
+        }
+        json.dump(device_info, f, indent=4, ensure_ascii=False)
 
 
 def main():
