@@ -1,44 +1,76 @@
-import os
 import sys
+import os
 
-def register():
-    args = sys.argv[2:]
-    register_type = args[0]
-    allowed_register_type = ["hdd", "media"]
 
 def init():
-    dirs = [
-        os.path.join(os.getcwd(), "collection"),
-    ]
-    print("#### Program Initializing ####")
-    print(f"Making dir: \x1b[0;37;44m {dir[0]} \x1b[0m")
-    if not os.path.exists(dirs[0]):
-        os.makedirs(dirs[0])
-    
-    print("Making directories for media type ")
-    media_types = {}
-    terminator_keywords = ["done", "break", "complete"]
+    exit_command = ["done", "goodbye", "complete"]
+    absolute_exit_command = ["exit", "die"]
+    print("#### Initializing Project ####")
+    print("Creating `collection` folder...")
+    collection_folder = os.path.join(os.getcwd(), "collection")
+
+    if os.path.exists(collection_folder):
+        print("collection folder already exists! Please delete to continue")
+        sys.exit()
+    else:
+        os.makedirs(collection_folder)
+        print("Folder created!")
+
+    media_list = {}
+
     while True:
-        user_input = input("Media type: ")
-        if user_input in terminator_keywords:
+        media = str(input("Enter media: ")).lower()
+
+        if media in exit_command:
             break
-        media_types[user_input] = []
+        elif media in absolute_exit_command:
+            sys.exit()
+
+        if media not in media_list:
+            media_list[media] = []
+        else:
+            print(f"{media} already exists!")
+
         while True:
-            media_name = input("Media name: ")
-            if media_name in terminator_keywords:
+            media_type = str(input(f"Enter {media} type: ")).lower()
+            if media_type in exit_command:
                 break
-            media_types[user_input].append(media_name)
-            
+            elif media_type in absolute_exit_command:
+                sys.exit()
+
+            if media_type not in media_list[media]:
+                media_list[media].append(media_type)
+
+    for key in media_list.keys():
+        print(f"Making {key} directory...")
+        key_path = os.path.join(collection_folder, key)
+        os.makedirs(key_path)
+        for subkey in media_list[key]:
+            print(f"Making {key}/{subkey} directory...")
+            os.makedirs(os.path.join(key_path, subkey))
+
+    print(media_list)
 
 
 def main():
     try:
         subcommand = sys.argv[1]
     except Exception:
-        print("Usage: py manage.py [subcommand]")
-    
-    if subcommand in ["register", "init"]:
+        subcommand = "help"
+
+    if subcommand in ["init", "register"]:
         globals()[subcommand]()
-    
-if __name__ == "__main__":
+
+    if subcommand == "help":
+        print("Usage: py manage.py [subcommand] [nargs]")
+        print("    \033[1mSubcommand \033[0m")
+        print("init")
+        print("\tInitialize application")
+        print("register")
+        print("\tRequire `media` or `drive` as an argument")
+
+    sys.exit()
+
+
+if __name__ == '__main__':
     main()
