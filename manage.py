@@ -1,55 +1,100 @@
+import json
 import sys
 import os
 
 
+def choose(name: str, subsection: bool):
+    absolute_exit_command = ["exit", "quit", "die"]
+    exit_command = ["done", "goodbye", "complete", "ok"]
+    arr = {} if subsection else []
+    while True:
+        first_input = str(input(f"Enter {name}: ")).lower()
+
+        if first_input in exit_command:
+            if not subsection:
+                return arr
+            break
+        elif first_input in absolute_exit_command:
+            sys.exit()
+
+        if first_input not in arr:
+            if subsection:
+                arr[first_input] = []
+            else:
+                arr.append(first_input)
+
+        if not subsection:
+            continue
+
+        while True:
+            second_input = str(input(f"Enter {first_input}: "))
+
+            if second_input in exit_command:
+                break
+            elif second_input in absolute_exit_command:
+                sys.exit()
+
+            if second_input not in arr[first_input]:
+                arr[first_input].append(second_input)
+    return arr
+
+
 def init():
-    exit_command = ["done", "goodbye", "complete"]
-    absolute_exit_command = ["exit", "die"]
+    output = {}
     print("#### Initializing Project ####")
     print("Creating `collection` folder...")
     collection_folder = os.path.join(os.getcwd(), "collection")
 
     if os.path.exists(collection_folder):
-        print("collection folder already exists! Please delete to continue")
-        sys.exit()
+        print("collection folder already exists!")
     else:
         os.makedirs(collection_folder)
         print("Folder created!")
 
-    media_list = {}
+    print("Making Media")
+    output["media"] = choose("media", True)
 
-    while True:
-        media = str(input("Enter media: ")).lower()
+    print("")
 
-        if media in exit_command:
-            break
-        elif media in absolute_exit_command:
-            sys.exit()
+    print("Making drive")
+    output["drive"] = choose("drive", False)
 
-        if media not in media_list:
-            media_list[media] = []
-        else:
-            print(f"{media} already exists!")
+    media_path = os.path.join(collection_folder, "media")
+    os.makedirs(media_path)
+    drive_path = os.path.join(collection_folder, "drive")
+    os.makedirs(drive_path)
 
-        while True:
-            media_type = str(input(f"Enter {media} type: ")).lower()
-            if media_type in exit_command:
-                break
-            elif media_type in absolute_exit_command:
-                sys.exit()
-
-            if media_type not in media_list[media]:
-                media_list[media].append(media_type)
-
-    for key in media_list.keys():
+    for key in output["media"].keys():
         print(f"Making {key} directory...")
-        key_path = os.path.join(collection_folder, key)
+        key_path = os.path.join(media_path, key)
         os.makedirs(key_path)
-        for subkey in media_list[key]:
+
+        for subkey in output["media"][key]:
             print(f"Making {key}/{subkey} directory...")
             os.makedirs(os.path.join(key_path, subkey))
 
-    print(media_list)
+    for drive in output["drive"]:
+        print(f"Making {drive}'s drive")
+        os.makedirs(os.path.join(drive_path, drive))
+
+    with open(os.path.join(collection_folder, "devices.json"), "w") as f:
+        json.dump(output, f, indent=4, ensure_ascii=False)
+
+    print("Completed!")
+
+
+def register():
+    try:
+        device_type = sys.argv[2]
+    except Exception:
+        print("Usage: py manage.py register [device_type]")
+        sys.exit()
+
+    if device_type == "media":
+        pass
+
+    if device_type == "drive":
+        pass
 
 
 def main():

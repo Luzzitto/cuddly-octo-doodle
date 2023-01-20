@@ -1,12 +1,21 @@
 {
-    "canon": [
-        "90D"
-    ],
-    "go pro": [
-        "hero 10"
-    ],
-    "drone": [
-        "air 2s",
-        "mini"
+    "media": {
+        "canon": [
+            "90D"
+        ],
+        "go pro": [
+            "hero 10"
+        ],
+        "drone": [
+            "air 2s",
+            "mini"
+        ]
+    },
+    "drive": [
+        "papa",
+        "mama",
+        "erica",
+        "uzzi",
+        "ouiel"
     ]
 }
