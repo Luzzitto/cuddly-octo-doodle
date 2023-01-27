@@ -7,8 +7,7 @@ from datetime import datetime
 
 class Upload:
     def __init__(self):
-        # self.path = ask_path()
-        self.path = "D:\\programming\\python\\cuddly-octo-doodle\\collection\\"
+        self.path = ask_path()
         self.id = ""
         self.db = DB()
         self.extensions = {}
